@@ -73,7 +73,7 @@ class BaitoManage:
                 removed.to_csv(csv_file, index=True)
                 print("\nEntry successfully removed.")
                 return 0
-        except KeyError and FileNotFoundError:
+        except KeyError or FileNotFoundError:
             print("\nInvalid year/month or day.")
             return -1
 

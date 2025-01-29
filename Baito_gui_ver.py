@@ -65,6 +65,9 @@ def setup_add_tab(frame):
   time_frame = tk.LabelFrame(frame, text="Working Hours", padx=10, pady=10)
   time_frame.pack(padx=10, pady=(0, 10), fill="x")
   
+  minutes_tuple = tuple(range(0, 60, config.get_pay_interval_minutes()))
+  minutes_tuple = tuple(map(lambda x: f"{x:02d}", minutes_tuple))
+  
   tk.Label(time_frame, text="Start Time:").grid(row=0, column=0, padx=5, pady=5)
   
   default_time = list(map(int, config.get_default_start_time().split(":")))
@@ -76,7 +79,7 @@ def setup_add_tab(frame):
   
   tk.Label(time_frame, text=":").grid(row=0, column=2, padx=5, pady=5)
   
-  start_minute = tk.Spinbox(time_frame, width=2, from_=0, to=59, increment=config.get_pay_interval_minutes(), textvariable=default_start_minute)
+  start_minute = tk.Spinbox(time_frame, width=2, values=minutes_tuple, textvariable=default_start_minute, wrap=True)
   start_minute.grid(row=0, column=3, padx=5, pady=5)
   
   
@@ -87,12 +90,12 @@ def setup_add_tab(frame):
   default_end_minute = tk.IntVar(value=default_time[1])
   
   end_hour = tk.Spinbox(time_frame, width=2, from_=0, to=23, textvariable=default_end_hour)
-  end_hour.grid(row=1, column=1, padx=5, pady=5)
+  end_hour.grid(row=1, column=1, padx=0, pady=5)
   
-  tk.Label(time_frame, text=":").grid(row=1, column=2, padx=5, pady=5)
+  tk.Label(time_frame, text=":").grid(row=1, column=2, padx=0, pady=5)
   
-  end_minute = tk.Spinbox(time_frame, width=2, from_=0, to=59, increment=config.get_pay_interval_minutes(), textvariable=default_end_minute)
-  end_minute.grid(row=1, column=3, padx=5, pady=5)
+  end_minute = tk.Spinbox(time_frame, width=2, values=minutes_tuple, textvariable=default_end_minute, wrap=True)
+  end_minute.grid(row=1, column=3, padx=0, pady=5)
   
   tk.Button(frame,
             text="Add Workday",
@@ -155,6 +158,8 @@ def setup_delete_tab(frame):
   frame.bind('<Return>', lambda event: remove_workday(cal.get_date()))
 
 def setup_paying_tab(frame):
+  default_year, default_month = get_current_date().split("-")
+  
   date_frame = tk.LabelFrame(frame, text="Select Date", padx=10, pady=10)
   date_frame.pack(padx=10, pady=10, fill="x")
   
@@ -165,13 +170,15 @@ def setup_paying_tab(frame):
   date_frame.grid_columnconfigure(4, weight=1)
   date_frame.grid_columnconfigure(5, weight=1)
 
-  tk.Label(date_frame, text="Year", font=("Arial", 14, "bold")).grid(row=0, column=1, padx=5, pady=5, sticky="e")
+  tk.Label(date_frame, text="Year:", font=("Arial", 14, "bold")).grid(row=0, column=1, padx=5, pady=5, sticky="e")
   year = tk.Entry(date_frame, font=("Arial", 14, "bold"), width=5)
   year.grid(row=0, column=2, padx=(5, 0), pady=5, sticky="w")
+  year.insert(0, default_year)
   
-  tk.Label(date_frame, text="Month", font=("Arial", 14, "bold")).grid(row=0, column=3, padx=(0, 0), pady=5, sticky="e")
+  tk.Label(date_frame, text="Month:", font=("Arial", 14, "bold")).grid(row=0, column=3, padx=(0, 0), pady=5, sticky="e")
   month = tk.Entry(date_frame, font=("Arial", 14, "bold"), width=5)
-  month.grid(row=0, column=4, padx=(0, 5), pady=5, sticky="w")
+  month.grid(row=0, column=4, padx=(5, 0), pady=5, sticky="w")
+  month.insert(0, default_month)
 
   pay_frame = tk.LabelFrame(frame, text="Total Paying", padx=10, pady=10)
   pay_frame.pack(padx=10, pady=0, fill="x")
@@ -203,8 +210,7 @@ def setup_paying_tab(frame):
   def on_enter_key():
     total_paying.config(text=get_monthly_pay(year.get(), month.get()))
 
-  year.bind('<Return>', lambda event: on_enter_key())
-  month.bind('<Return>', lambda event: on_enter_key())
+  frame.bind('<Return>', lambda event: on_enter_key())
   
 
 root = tk.Tk()
