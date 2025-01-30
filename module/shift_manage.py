@@ -16,7 +16,7 @@ FILE_FORMAT = config.get_file_format()
 COLUMNS = config.get_columns()
 FILE_DATE_FORMAT = config.get_file_date_format()
 DATE_FORMAT = config.get_date_format()
-SHIFT_FORMAT = config.get_shift_format()
+TIME_FORMAT = config.get_time_format()
 TIME_BARRIER = config.get_time_barrier()
 
 WEEKDAY_WAGE = config.get_weekday_wage()
@@ -136,19 +136,19 @@ class BaitoManage:
             else:
                 base_wage = WEEKEND_WAGE
 
-            if pd.to_datetime(row["end_time"], format=SHIFT_FORMAT).time() > datetime.strptime(TIME_BARRIER, SHIFT_FORMAT).time():
-                before_ten = (datetime.strptime(TIME_BARRIER, SHIFT_FORMAT)
-                              - pd.to_datetime(row["start_time"], format=SHIFT_FORMAT))
-                after_ten = (pd.to_datetime(row["end_time"], format=SHIFT_FORMAT)
-                             - datetime.strptime(TIME_BARRIER, SHIFT_FORMAT))
+            if pd.to_datetime(row["end_time"], format=TIME_FORMAT).time() > datetime.strptime(TIME_BARRIER, TIME_FORMAT).time():
+                before_ten = (datetime.strptime(TIME_BARRIER, TIME_FORMAT)
+                              - pd.to_datetime(row["start_time"], format=TIME_FORMAT))
+                after_ten = (pd.to_datetime(row["end_time"], format=TIME_FORMAT)
+                             - datetime.strptime(TIME_BARRIER, TIME_FORMAT))
                 before_ten_paying = int(before_ten.total_seconds())/(60**2) * base_wage
                 after_ten_paying = int(int(after_ten.total_seconds())/(60**2) * base_wage * 1.25)
                 daily_paying = before_ten_paying + after_ten_paying
                 # print(str(before_ten.total_seconds() / (60 ** 2)))
                 # print(str(after_ten.total_seconds() / (60 ** 2)))
             else:
-                work_time = (pd.to_datetime(row["end_time"], format=SHIFT_FORMAT)
-                             - pd.to_datetime(row["start_time"], format=SHIFT_FORMAT))
+                work_time = (pd.to_datetime(row["end_time"], format=TIME_FORMAT)
+                             - pd.to_datetime(row["start_time"], format=TIME_FORMAT))
                 daily_paying = work_time.total_seconds() * base_wage/(60**2)
             # print(thousands_separators(daily_paying))
             total_paying += daily_paying + (2*TRANSIT_FEE)

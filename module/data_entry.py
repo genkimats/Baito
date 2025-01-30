@@ -13,7 +13,7 @@ FILE_FORMAT = config.get_file_format()
 COLUMNS = config.get_columns()
 FILE_DATE_FORMAT = config.get_file_date_format()
 DATE_FORMAT = config.get_date_format()
-SHIFT_FORMAT = config.get_shift_format()
+TIME_FORMAT = config.get_time_format()
 TIME_BARRIER = config.get_time_barrier()
 
 
@@ -79,7 +79,7 @@ def get_start_time(prompt: str, allow_default: bool = False) -> str:
         return "17:00"
 
     try:
-        valid_date = datetime.strptime(start_time, SHIFT_FORMAT)
+        valid_date = datetime.strptime(start_time, TIME_FORMAT)
         return start_time
     except ValueError:
         print("Invalid time format. Please enter the date in HH:MM format.")
@@ -98,7 +98,7 @@ def get_end_time(prompt: str) -> str:
     """
     end_time = input(prompt)
     try:
-        valid_date = datetime.strptime(end_time, SHIFT_FORMAT)
+        valid_date = datetime.strptime(end_time, TIME_FORMAT)
         return end_time
     except ValueError:
         print("Invalid time format. Please enter the date in HH:MM format.")

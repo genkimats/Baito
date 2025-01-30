@@ -42,5 +42,5 @@ class BaitoConfiguration:
     def get_date_format(self) -> str:
         return os.getenv("DATE_FORMAT")
     
-    def get_shift_format(self) -> str:
-        return os.getenv("SHIFT_FORMAT")
+    def get_time_format(self) -> str:
+        return os.getenv("TIME_FORMAT")

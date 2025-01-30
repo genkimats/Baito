@@ -7,6 +7,7 @@ from tkcalendar import Calendar
 from module.utils import get_current_date
 from module.baito_configuration import BaitoConfiguration
 from module.shift_manage import BaitoManage
+from datetime import date
 
 config = BaitoConfiguration()
 
@@ -81,6 +82,23 @@ def get_yearly_pay(year: str) -> str:
     messagebox.showerror("Error", "Invalid year")
     return "---"
 
+def get_workdays(year: str, month: str) -> list[str]:
+  """
+  Get the workdays for the month.
+
+  Args:
+      year (str): year in "yyyy" format.
+      month (str): month in "mm" format.
+
+  Returns:
+      list[str]: The workdays for the month.
+  """
+  try:
+    workdays = BaitoManage.get_workdays(f"{year}-{month}")
+    return workdays
+  except:
+    messagebox.showerror("Error", "Invalid year/month")
+    return []
 
 def setup_add_tab(frame: tk.Frame) -> None:
   """
@@ -191,6 +209,27 @@ def setup_delete_tab(frame: tk.Frame) -> None:
                  weekendforeground="red",
                  selectforeground="blue")
   cal.pack(padx=10, pady=(20, 0), fill="both")
+  
+  workdays = get_workdays(str(year), f"{month:02d}")
+  all_days = set(range(1, 32))
+  workdays_set = set(date.fromisoformat(day).day for day in workdays)
+  non_workdays = all_days - workdays_set
+
+  for day in non_workdays:
+    cal.calevent_create(date(year, month, day).isoformat(), 'NonWorkday', 'nonworkday')
+  cal.tag_config('nonworkday', background='grey', foreground='white')
+
+  def on_month_change(event):
+    cal.calevent_remove('nonworkday')
+    new_year, new_month = cal.get_displayed_month()
+    workdays = get_workdays(str(new_year), f"{new_month:02d}")
+    workdays_set = set(date.fromisoformat(day).day for day in workdays)
+    non_workdays = all_days - workdays_set
+
+    for day in non_workdays:
+      cal.calevent_create(date(new_year, new_month, day).isoformat(), 'NonWorkday', 'nonworkday')
+
+  cal.bind("<<CalendarMonthChanged>>", on_month_change)
   
   tk.Button(frame,
             text="Delete Workday",
