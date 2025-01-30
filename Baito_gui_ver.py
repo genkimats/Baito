@@ -10,7 +10,16 @@ from module.shift_manage import BaitoManage
 
 config = BaitoConfiguration()
 
-def add_workday(date, start_time, end_time):
+def add_workday(date: str, start_time: str, end_time: str) -> None:
+  """
+  Add a workday to the csv file.
+  Called when the user clicks the "Add Workday" button or presses the Enter key.
+
+  Args:
+      date (str): year, month, and day in "yyyy-mm-dd" format.
+      start_time (str): start time in "hh:mm" format.
+      end_time (str): end time in "hh:mm" format.
+  """
   year, month, day = date.split("-")
   state = BaitoManage.add_entry(f"{year}-{month}", day, start_time, end_time)
   if state == 0:
@@ -20,7 +29,14 @@ def add_workday(date, start_time, end_time):
   elif state == -2:
     messagebox.showerror("Error", "Entry with the same date already exists")
 
-def remove_workday(date):
+def remove_workday(date: str) -> None:
+  """
+  Remove a workday from the csv file.
+  Called when the user clicks the "Delete Workday" button or presses the Enter key.
+
+  Args:
+      date (str): year, month, and day in "yyyy-mm-dd" format.
+  """
   year, month, day = date.split("-")
   state = BaitoManage.remove_entry(f"{year}-{month}", day)
   if state == 0:
@@ -28,7 +44,18 @@ def remove_workday(date):
   elif state == -1:
     messagebox.showerror("Error", "Invalid year/month or day")
 
-def get_monthly_pay(year, month):
+def get_monthly_pay(year: str, month: str) -> str:
+  """
+  Get the total pay for the month.
+  Called when the user clicks the "Get Paying" button or presses the Enter key
+
+  Args:
+      year (str): year in "yyyy" format.
+      month (str): month in "mm" format.
+
+  Returns:
+      str: The total pay for the month.
+  """
   try:
     total_pay = BaitoManage.get_monthly_pay(f"{year}-{month}")
     return f"{total_pay}"
@@ -37,7 +64,13 @@ def get_monthly_pay(year, month):
     return "---"
 
 
-def setup_add_tab(frame):
+def setup_add_tab(frame: tk.Frame) -> None:
+  """
+  Setup the "Add Workday" tab.
+
+  Args:
+      frame (tk.Frame): The frame to add the widgets to.
+  """
   year, month = list(map(lambda x: int(x), get_current_date().split("-")))
   cal = Calendar(frame, 
                  selectmode = 'day',
@@ -115,7 +148,13 @@ def setup_add_tab(frame):
   
   frame.bind('<Return>', lambda event: add_workday(cal.get_date(), f"{start_hour.get()}:{start_minute.get()}", f"{end_hour.get()}:{end_minute.get()}"))  
 
-def setup_delete_tab(frame):
+def setup_delete_tab(frame: tk.Frame) -> None:
+  """
+  Setup the "Delete Workday" tab.
+
+  Args:
+      frame (tk.Frame): The frame to add the widgets to.
+  """
   year, month = list(map(lambda x: int(x), get_current_date().split("-")))
   cal = Calendar(frame, 
                  selectmode = 'day',
@@ -207,24 +246,29 @@ def setup_paying_tab(frame):
   frame.bind('<Return>', lambda event: total_paying.config(text=get_monthly_pay(year.get(), month.get())))
   
 
-root = tk.Tk()
-root.title(u"Baito")
-root.geometry("450x450")
+def main():
+  root = tk.Tk()
+  root.title(u"Baito")
+  root.geometry("450x450")
+  root.resizable(False, False)
 
-notebook = ttk.Notebook(root)
-notebook.pack(expand=True, fill='both')
+  notebook = ttk.Notebook(root)
+  notebook.pack(expand=True, fill='both')
 
-tab_add = ttk.Frame(notebook)
-tab_delete = ttk.Frame(notebook)
-tab_paying = ttk.Frame(notebook)
+  tab_add = ttk.Frame(notebook)
+  tab_delete = ttk.Frame(notebook)
+  tab_paying = ttk.Frame(notebook)
 
-notebook.add(tab_add, text='Add Workday')
-notebook.add(tab_delete, text='Delete Workday')
-notebook.add(tab_paying, text='View Paying')
+  notebook.add(tab_add, text='Add Workday')
+  notebook.add(tab_delete, text='Delete Workday')
+  notebook.add(tab_paying, text='View Paying')
 
-setup_add_tab(tab_add)
-setup_delete_tab(tab_delete)
-setup_paying_tab(tab_paying)
+  setup_add_tab(tab_add)
+  setup_delete_tab(tab_delete)
+  setup_paying_tab(tab_paying)
 
 
-root.mainloop()
+  root.mainloop()
+
+if __name__ == "__main__":
+  main()
