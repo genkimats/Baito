@@ -35,9 +35,9 @@ class BaitoManage:
         """
         try:
             if not year_month:
-                csv_file = "worktime_info/" + FILE_FORMAT + get_current_date()
+                csv_file = f"worktime_info/{FILE_FORMAT}{get_current_date()}"
             else:
-                csv_file = "worktime_info/" + FILE_FORMAT + year_month
+                csv_file = f"worktime_info/{FILE_FORMAT}{year_month}"
             pd.read_csv(csv_file)
         except FileNotFoundError:
             df = pd.DataFrame(columns=COLUMNS)
@@ -59,13 +59,13 @@ class BaitoManage:
             int: 0 if successful, -1 if invalid year/month or day, -2 if entry with the same date already exists.
         """
         cls.initialize_csv(year_month)
-        date = year_month+"-"+day
+        date = f"{year_month}-{day}"
         new_entry = {
             "date": date,
             "start_time": start_time,
             "end_time": end_time
         }
-        csv_file = "worktime_info/" + FILE_FORMAT + year_month
+        csv_file = f"worktime_info/{FILE_FORMAT}{year_month}"
     
         try:
             df = pd.read_csv(csv_file)
@@ -94,7 +94,7 @@ class BaitoManage:
         Returns:
             int: 0 if successful, -1 if invalid year/month or day.
         """
-        csv_file = "worktime_info/" + FILE_FORMAT + year_month
+        csv_file = f"worktime_info/{FILE_FORMAT}{year_month}"
         try:
             pd.read_csv(csv_file)
             with open(csv_file, "a", newline="") as csvfile:
@@ -122,7 +122,7 @@ class BaitoManage:
         Returns:
             int | str: total paying for the queried month.
         """
-        csv_file = "worktime_info/" + FILE_FORMAT + year_month
+        csv_file = f"worktime_info/{FILE_FORMAT}{year_month}"
         try:
             df = pd.read_csv(csv_file, names=COLUMNS, header=0)
         except FileNotFoundError:
@@ -153,6 +153,33 @@ class BaitoManage:
             # print(thousands_separators(daily_paying))
             total_paying += daily_paying + (2*TRANSIT_FEE)
         formatted_total_paying = str(thousands_separators(int(total_paying)))
-        print("\nTotal paying: " + formatted_total_paying + " yen")
-        return formatted_total_paying
-        
+        print(f"\nTotal paying: {formatted_total_paying} yen")
+        if returntype == "int":
+            return total_paying
+        elif returntype == "str":
+            return formatted_total_paying
+    
+    @classmethod
+    def get_yearly_pay(cls, year: str, returntype: str = "int") -> int | str:
+        """
+        Calculate total paying for the queried year.
+
+        Args:
+            year (str): year in "yyyy" format.
+            returntype (str): data type of return value ("str" or "int"). Defaults to "int".
+
+        Returns:
+            int | str: total paying for the queried year.
+        """
+        total_paying = 0
+        for month in range(1, 13):
+            year_month = f"{year}-{month:02d}"
+            monthly_paying = cls.get_monthly_pay(year_month, returntype="int")
+            if monthly_paying:
+                total_paying += monthly_paying
+        formatted_total_paying = str(thousands_separators(int(total_paying)))
+        print(f"\nTotal paying for {year}: {formatted_total_paying} yen")
+        if returntype == "int":
+            return total_paying
+        elif returntype == "str":
+            return formatted_total_paying

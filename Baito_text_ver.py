@@ -50,7 +50,7 @@ def monthly_pay():
     valid = False
     fail_count = 0
     while not valid:
-        if BaitoManage.get_monthly_pay(year_month):
+        if BaitoManage.get_monthly_pay(year_month, returntype="str"):
             valid = True
         else:
             fail_count += 1
