@@ -15,7 +15,11 @@ WEEKDAY_WAGE = config.get_weekday_wage()
 WEEKEND_WAGE = config.get_weekend_wage()
 TRANSIT_FEE = config.get_transit_fee()
 
-def add():
+def add() -> None:
+    """
+    Action when user chooses to add a new work day.
+    Query the user for the work details and call the add_entry function to add the entry to the csv file.
+    """
     year_month = get_year_month("Enter year & month of work in the format yyyy-mm or blank for current month: ",
                                 allow_default=True)
     day = get_day("Enter day of work in format dd or blank for today: ", allow_default=True)
@@ -26,12 +30,20 @@ def add():
 
 
 def remove():
+    """
+    Action when user chooses to remove a work day.
+    Query the user for the work details and call the remove_entry function to remove the entry from the csv file.
+    """
     year_month = get_year_month("Enter year & month of work in the format yyyy-mm or blank for current month: ",
                                 allow_default=True)
     day = get_day("Enter day of work in format dd or blank for today: ", allow_default=True)
     BaitoManage.remove_entry(year_month, day)
     
 def monthly_pay():
+    """
+    Action when user chooses to view the total paying.
+    Query the user for the desired date of viewing and call the get_monthly_pay function to view the
+    """
     year_month = input("Enter desired date of viewing (yyyy-mm) or blank for current month: ")
     if not year_month:
         year_month = datetime.today().strftime(BaitoManage.FILE_DATE_FORMAT)

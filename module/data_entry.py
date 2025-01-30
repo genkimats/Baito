@@ -1,3 +1,7 @@
+"""
+Module for getting user input for the data entry process.
+Mainly used for the command line interface.
+"""
 from datetime import datetime
 from module.baito_configuration import BaitoConfiguration
 
@@ -13,7 +17,17 @@ SHIFT_FORMAT = config.get_shift_format()
 TIME_BARRIER = config.get_time_barrier()
 
 
-def get_year_month(prompt, allow_default=False):
+def get_year_month(prompt: str, allow_default: bool = False) -> str:
+    """
+    Get the year and month in "yyyy-mm" format from user input.
+
+    Args:
+        prompt (str): The prompt to show the user.
+        allow_default (bool, optional): If True, allows the user to enter the input as blank. Defaults to False.
+
+    Returns:
+        str: The year and month in "yyyy-mm" format.
+    """
     date_str = input(prompt)
     if allow_default and not date_str:
         return datetime.today().strftime("%Y-%m")
@@ -26,7 +40,17 @@ def get_year_month(prompt, allow_default=False):
         return get_year_month(prompt, allow_default)
 
 
-def get_day(prompt, allow_default=False):
+def get_day(prompt: str, allow_default: bool = False) -> str:
+    """
+    Get the day in "dd" format from user input.
+
+    Args:
+        prompt (str): The prompt to show the user.
+        allow_default (bool, optional): If True, allows the user to enter the input as blank. Defaults to False.
+
+    Returns:
+        str: The day in "dd" format.
+    """
     day_str = input(prompt)
     if allow_default and not day_str:
         return datetime.today().strftime("%d")
@@ -39,7 +63,17 @@ def get_day(prompt, allow_default=False):
         return get_day(prompt, allow_default)
 
 
-def get_start_time(prompt, allow_default=False):
+def get_start_time(prompt: str, allow_default: bool = False) -> str:
+    """
+    Get the start time in "HH:MM" format from user input.
+
+    Args:
+        prompt (str): The prompt to show the user.
+        allow_default (bool, optional): If True, allows the user to enter the input as blank. Defaults to False.
+
+    Returns:
+        str: The start time in "HH:MM" format.
+    """
     start_time = input(prompt)
     if allow_default and not start_time:
         return "17:00"
@@ -52,7 +86,16 @@ def get_start_time(prompt, allow_default=False):
         return get_start_time(prompt, allow_default)
 
 
-def get_end_time(prompt):
+def get_end_time(prompt: str) -> str:
+    """
+    Get the end time in "HH:MM" format from user input.
+
+    Args:
+        prompt (str): The prompt to show the user.
+
+    Returns:
+        str: The end time in "HH:MM" format.
+    """
     end_time = input(prompt)
     try:
         valid_date = datetime.strptime(end_time, SHIFT_FORMAT)

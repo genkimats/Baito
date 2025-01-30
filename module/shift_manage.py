@@ -1,3 +1,7 @@
+"""
+Module for managing worktime data by directly interacting with the csv files.
+It provides functions to add, remove, and calculate total paying for worktime entries.
+"""
 from datetime import datetime
 import pandas as pd
 import csv
@@ -21,12 +25,19 @@ TRANSIT_FEE = config.get_transit_fee()
 
 class BaitoManage:
     @classmethod
-    def initialize_csv(cls, date):
+    def initialize_csv(cls, year_month: str) -> None:
+        """
+        Initialize the csv file for worktime management.
+        Only called when the csv file does not exist.
+
+        Args:
+            year_month (str): year and month in "yyyy-mm" format.
+        """
         try:
-            if not date:
+            if not year_month:
                 csv_file = "worktime_info/" + FILE_FORMAT + get_current_date()
             else:
-                csv_file = "worktime_info/" + FILE_FORMAT + date
+                csv_file = "worktime_info/" + FILE_FORMAT + year_month
             pd.read_csv(csv_file)
         except FileNotFoundError:
             df = pd.DataFrame(columns=COLUMNS)
@@ -34,7 +45,19 @@ class BaitoManage:
         print("initialized.")
 
     @classmethod
-    def add_entry(cls, year_month, day, start_time, end_time) -> int:
+    def add_entry(cls, year_month: str, day: str, start_time: str, end_time: str) -> int:
+        """
+        Add an entry to the worktime csv file.
+
+        Args:
+            year_month (str): year and month in "yyyy-mm" format.
+            day (str): day in "dd" format.
+            start_time (str): start time in "hh:mm" format.
+            end_time (str): end time in "hh:mm" format.
+
+        Returns:
+            int: 0 if successful, -1 if invalid year/month or day, -2 if entry with the same date already exists.
+        """
         cls.initialize_csv(year_month)
         date = year_month+"-"+day
         new_entry = {
@@ -60,7 +83,17 @@ class BaitoManage:
         
 
     @classmethod
-    def remove_entry(cls, year_month, day) -> bool:
+    def remove_entry(cls, year_month: str, day: str) -> int:
+        """
+        Remove an entry from the worktime csv file.
+
+        Args:
+            year_month (str): year and month in "yyyy-mm" format.
+            day (str): day in "dd" format.
+
+        Returns:
+            int: 0 if successful, -1 if invalid year/month or day.
+        """
         csv_file = "worktime_info/" + FILE_FORMAT + year_month
         try:
             pd.read_csv(csv_file)
@@ -78,7 +111,17 @@ class BaitoManage:
             return -1
 
     @classmethod
-    def get_monthly_pay(cls, year_month) -> str:
+    def get_monthly_pay(cls, year_month: str, returntype: str = "int") -> int | str:
+        """
+        Calculate total paying for the queried month.
+
+        Args:
+            year_month (str): year and month in "yyyy-mm" format.
+            returntype (str, optional): data type of return value ("str" or "int"). Defaults to "int".
+
+        Returns:
+            int | str: total paying for the queried month.
+        """
         csv_file = "worktime_info/" + FILE_FORMAT + year_month
         try:
             df = pd.read_csv(csv_file, names=COLUMNS, header=0)
