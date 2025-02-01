@@ -230,13 +230,14 @@ def setup_add_tab(root: tk.Tk, frame: tk.Frame) -> None:
   end_minute = tk.Spinbox(end_time_frame, width=2, values=minutes_tuple, textvariable=default_end_minute, wrap=True)
   end_minute.grid(row=1, column=3, padx=0, pady=5)
   
+  def on_enter(event=None):
+    add_workday(root, cal.get_date(), f"{start_hour.get()}:{start_minute.get()}", f"{end_hour.get()}:{end_minute.get()}")
+    cal.selection_clear()
+    on_month_change(event)
+    
   tk.Button(frame,
             text="Add Workday",
-            command=lambda: add_workday(root,
-                                        cal.get_date(),
-                                        f"{start_hour.get()}:{start_minute.get()}", 
-                                        f"{end_hour.get()}:{end_minute.get()}"
-                                        ),
+            command=on_enter,
             font=("Arial", 14, "bold"),
             fg="black",
             bg="blue",
@@ -248,7 +249,7 @@ def setup_add_tab(root: tk.Tk, frame: tk.Frame) -> None:
             bd=5
             ).pack(pady=(10, 0), ipadx=10, ipady=0)
   
-  frame.bind('<Return>', lambda event: add_workday(root, cal.get_date(), f"{start_hour.get()}:{start_minute.get()}", f"{end_hour.get()}:{end_minute.get()}"))  
+  frame.bind('<Return>', lambda event: on_enter(event))  
 
 def setup_delete_tab(root: tk.Tk, frame: tk.Frame) -> None:
   """
@@ -299,8 +300,10 @@ def setup_delete_tab(root: tk.Tk, frame: tk.Frame) -> None:
     if workdays:
       workdays_set = set(datetime.strptime(day, DATE_FORMAT).day for day in workdays)
       non_workdays = all_days - workdays_set
+    else:
+      non_workdays = all_days
 
-      for day in non_workdays:
+    for day in non_workdays:
           try:
               cal.calevent_create(date(new_year, new_month, day), 'NonWorkday', 'nonworkday')
           except ValueError:
@@ -322,9 +325,14 @@ def setup_delete_tab(root: tk.Tk, frame: tk.Frame) -> None:
 
   cal.bind("<<CalendarSelected>>", on_date_selected)
   
+  def on_enter(event=None):
+    remove_workday(root, cal.get_date())
+    cal.selection_clear()
+    on_month_change(event)
+  
   tk.Button(frame,
             text="Delete Workday",
-            command=lambda: remove_workday(root, cal.get_date()),
+            command=on_enter,
             font=("Arial", 14, "bold"),
             fg="black",
             bg="blue",
@@ -335,8 +343,8 @@ def setup_delete_tab(root: tk.Tk, frame: tk.Frame) -> None:
             relief="ridge",
             bd=5
             ).pack(pady=(10, 0), ipadx=10)
-  
-  frame.bind('<Return>', lambda event: remove_workday(root, cal.get_date()))
+    
+  frame.bind('<Return>', lambda event: on_enter(event))
 
 def setup_paying_tab(root: tk.Tk, frame: tk.Frame) -> None:
   """
@@ -455,7 +463,10 @@ def setup_paying_tab(root: tk.Tk, frame: tk.Frame) -> None:
             bd=5
             ).pack(padx=5, pady=5)
 
-  tab_yearly.bind('<Return>', lambda event: total_yearly_paying.config(text=get_yearly_pay(root, yearly_year.get())))
+  def on_enter(event):
+    total_yearly_paying.config(text=get_yearly_pay(root, yearly_year.get()))
+    
+  tab_yearly.bind('<Return>', lambda event: on_enter(event))
   #endregion
 
 def main():
