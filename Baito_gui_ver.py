@@ -152,6 +152,44 @@ def setup_add_tab(root: tk.Tk, frame: tk.Frame) -> None:
                  weekendforeground="red",
                  selectforeground="blue")
   cal.pack(padx=10, pady=(20, 0), fill="both")
+  workdays = get_workdays(root, str(year), f"{month:02d}")
+  workdays_set = set()
+  if workdays:
+    workdays_set = set(datetime.strptime(day, DATE_FORMAT).day for day in workdays)
+    for day in workdays_set:
+      try:
+          cal.calevent_create(date(year, month, int(day)), 'Workday', 'workday')
+      except ValueError:
+          pass
+    cal.tag_config('workday', background='grey', foreground='lightgrey')
+  
+  def on_month_change(event):
+    cal.calevent_remove('nonworkday')
+    new_month, new_year = cal.get_displayed_month()
+    workdays = get_workdays(root, str(new_year), f"{new_month:02d}")
+    if workdays:
+      workdays_set = set(datetime.strptime(day, DATE_FORMAT).day for day in workdays)
+
+      for day in workdays_set:
+          try:
+              cal.calevent_create(date(new_year, new_month, day), 'Workday', 'workday')
+          except ValueError:
+              pass
+
+  cal.bind("<<CalendarMonthChanged>>", on_month_change)
+  
+  def on_date_selected(event):
+    selected_date = cal.get_date()
+    selected_date_obj = datetime.strptime(selected_date, DATE_FORMAT).day
+    new_month, new_year = cal.get_displayed_month()
+    workdays = get_workdays(root, str(new_year), f"{new_month:02d}")
+    if workdays:
+      workdays_set = set(datetime.strptime(day, DATE_FORMAT).day for day in workdays)
+      if selected_date_obj in workdays_set:
+          print("Selection disabled for:", selected_date)
+          cal.selection_clear()
+
+  cal.bind("<<CalendarSelected>>", on_date_selected)
   
   time_frame = tk.LabelFrame(frame, text="Working Hours", padx=10, pady=10)
   time_frame.pack(padx=10, pady=(0, 10), fill="x")
@@ -254,17 +292,6 @@ def setup_delete_tab(root: tk.Tk, frame: tk.Frame) -> None:
 
     cal.tag_config('nonworkday', background='grey', foreground='lightgrey')
   
-  def on_date_selected(event):
-    selected_date = cal.get_date()
-    selected_date_obj = datetime.strptime(selected_date, DATE_FORMAT).day
-    if selected_date_obj in non_workdays:
-        print("Selection disabled for:", selected_date)
-        cal.selection_clear()
-
-  # Bind event to detect selection change
-  cal.bind("<<CalendarSelected>>", on_date_selected)
-
-  # Function to handle month change
   def on_month_change(event):
     cal.calevent_remove('nonworkday')
     new_month, new_year = cal.get_displayed_month()
@@ -277,9 +304,23 @@ def setup_delete_tab(root: tk.Tk, frame: tk.Frame) -> None:
           try:
               cal.calevent_create(date(new_year, new_month, day), 'NonWorkday', 'nonworkday')
           except ValueError:
-              pass  # Ignore invalid dates
+              pass
 
   cal.bind("<<CalendarMonthChanged>>", on_month_change)
+  
+  def on_date_selected(event):
+    selected_date = cal.get_date()
+    selected_date_obj = datetime.strptime(selected_date, DATE_FORMAT).day
+    new_month, new_year = cal.get_displayed_month()
+    workdays = get_workdays(root, str(new_year), f"{new_month:02d}")
+    if workdays:
+      workdays_set = set(datetime.strptime(day, DATE_FORMAT).day for day in workdays)
+      non_workdays = all_days - workdays_set
+      if selected_date_obj in non_workdays:
+          print("Selection disabled for:", selected_date)
+          cal.selection_clear()
+
+  cal.bind("<<CalendarSelected>>", on_date_selected)
   
   tk.Button(frame,
             text="Delete Workday",
