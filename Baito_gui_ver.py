@@ -25,6 +25,10 @@ def add_workday(root: tk.Tk, date: str, start_time: str, end_time: str) -> None:
       start_time (str): start time in "hh:mm" format.
       end_time (str): end time in "hh:mm" format.
   """
+  if date == "":
+    messagebox.showerror("Error", "Please select a date")
+    root.update_idletasks()
+    return
   year, month, day = date.split("-")
   state = BaitoManage.add_entry(f"{year}-{month}", day, start_time, end_time)
   if state == 0:
@@ -72,7 +76,7 @@ def get_monthly_pay(root: tk.Tk, year: str, month: str) -> str:
       str: The total pay for the month.
   """
   try:
-    total_pay = BaitoManage.get_monthly_pay(root, f"{year}-{month}", returntype="str")
+    total_pay = BaitoManage.get_monthly_pay(f"{year}-{month}", returntype="str")
     return f"{total_pay}"
   except:
     messagebox.showerror("Error", "Invalid year/month")
@@ -91,6 +95,8 @@ def get_yearly_pay(root: tk.Tk, year: str) -> str:
   Returns:
       str: The total pay for the year.
   """
+  total_pay = BaitoManage.get_yearly_pay(year, returntype="str")
+  return f"{total_pay}"
   try:
     total_pay = BaitoManage.get_yearly_pay(root, year, returntype="str")
     return f"{total_pay}"
