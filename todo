@@ -4,4 +4,7 @@ b) add view all work-days function
 c) add multiple work-day entry
 
 App version:
-a) fix binding return key in add_tab and remove_tab
+a) debug: issue of redrawing issues and key binding issues after closing a messagebox
+tried: add root as a parameter and do root.update_idletasks(). -> failed
+possible solution: check with chatgpt
+if not works: dont use messagebox -> use tk.Label for logs and errors

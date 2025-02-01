@@ -183,3 +183,24 @@ class BaitoManage:
             return total_paying
         elif returntype == "str":
             return formatted_total_paying
+    
+    @classmethod
+    def get_workdays_list(cls, year_month: str) -> list[str]:
+        """
+        Get the list of workdays in the queried month.
+
+        Args:
+            year_month (str): year and month in "yyyy-mm" format.
+
+        Returns:
+            list[str]: list of workdays in the queried month.
+        """
+        csv_file = f"worktime_info/{FILE_FORMAT}{year_month}"
+        try:
+            df = pd.read_csv(csv_file, names=COLUMNS, header=0)
+        except FileNotFoundError:
+            print("Invalid date or filename.")
+            return None
+
+        workdays = df["date"].tolist()
+        return workdays

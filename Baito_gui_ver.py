@@ -7,16 +7,20 @@ from tkcalendar import Calendar
 from module.utils import get_current_date
 from module.baito_configuration import BaitoConfiguration
 from module.shift_manage import BaitoManage
-from datetime import date
+from datetime import datetime, date
 
 config = BaitoConfiguration()
 
-def add_workday(date: str, start_time: str, end_time: str) -> None:
+DATE_FORMAT = config.get_date_format()
+
+
+def add_workday(root: tk.Tk, date: str, start_time: str, end_time: str) -> None:
   """
   Add a workday to the csv file.
   Called when the user clicks the "Add Workday" button or presses the Enter key.
 
   Args:
+      root (tk.Tk): The root window.
       date (str): year, month, and day in "yyyy-mm-dd" format.
       start_time (str): start time in "hh:mm" format.
       end_time (str): end time in "hh:mm" format.
@@ -29,28 +33,38 @@ def add_workday(date: str, start_time: str, end_time: str) -> None:
     messagebox.showerror("Error", "Invalid year/month or day")
   elif state == -2:
     messagebox.showerror("Error", "Entry with the same date already exists")
+    
+  root.update_idletasks()
 
-def remove_workday(date: str) -> None:
+def remove_workday(root: tk.Tk, date: str) -> None:
   """
   Remove a workday from the csv file.
   Called when the user clicks the "Delete Workday" button or presses the Enter key.
 
   Args:
+      root (tk.Tk): The root window.
       date (str): year, month, and day in "yyyy-mm-dd" format.
   """
+  if date == "":
+    messagebox.showerror("Error", "Please select a date")
+    root.update_idletasks()
+    return
   year, month, day = date.split("-")
   state = BaitoManage.remove_entry(f"{year}-{month}", day)
   if state == 0:
     messagebox.showinfo("Success", "Entry removed successfully")
   elif state == -1:
     messagebox.showerror("Error", "Invalid year/month or day")
+    
+  root.update_idletasks()
 
-def get_monthly_pay(year: str, month: str) -> str:
+def get_monthly_pay(root: tk.Tk, year: str, month: str) -> str:
   """
   Get the total pay for the month.
   Called when the user clicks the "Get Paying" button or presses the Enter key
 
   Args:
+      root (tk.Tk): The root window.
       year (str): year in "yyyy" format.
       month (str): month in "mm" format.
 
@@ -58,35 +72,39 @@ def get_monthly_pay(year: str, month: str) -> str:
       str: The total pay for the month.
   """
   try:
-    total_pay = BaitoManage.get_monthly_pay(f"{year}-{month}", returntype="str")
+    total_pay = BaitoManage.get_monthly_pay(root, f"{year}-{month}", returntype="str")
     return f"{total_pay}"
   except:
     messagebox.showerror("Error", "Invalid year/month")
+    root.update_idletasks()
     return "---"
 
-def get_yearly_pay(year: str) -> str:
+def get_yearly_pay(root: tk.Tk, year: str) -> str:
   """
   Get the total pay for the year.
   Called when the user clicks the "Get Paying" button or presses the Enter key
 
   Args:
+      root (tk.Tk): The root window.
       year (str): year in "yyyy" format.
 
   Returns:
       str: The total pay for the year.
   """
   try:
-    total_pay = BaitoManage.get_yearly_pay(year, returntype="str")
+    total_pay = BaitoManage.get_yearly_pay(root, year, returntype="str")
     return f"{total_pay}"
   except:
     messagebox.showerror("Error", "Invalid year")
+    root.update_idletasks()
     return "---"
 
-def get_workdays(year: str, month: str) -> list[str]:
+def get_workdays(root: tk.Tk, year: str, month: str) -> list[str]:
   """
   Get the workdays for the month.
 
   Args:
+      root (tk.Tk): The root window.
       year (str): year in "yyyy" format.
       month (str): month in "mm" format.
 
@@ -94,17 +112,20 @@ def get_workdays(year: str, month: str) -> list[str]:
       list[str]: The workdays for the month.
   """
   try:
-    workdays = BaitoManage.get_workdays(f"{year}-{month}")
+    workdays = BaitoManage.get_workdays_list(f"{year}-{month}")
     return workdays
   except:
     messagebox.showerror("Error", "Invalid year/month")
+    root.update_idletasks()
     return []
 
-def setup_add_tab(frame: tk.Frame) -> None:
+
+def setup_add_tab(root: tk.Tk, frame: tk.Frame) -> None:
   """
   Setup the "Add Workday" tab.
 
   Args:
+      root (tk.Tk): The root window.
       frame (tk.Frame): The frame to add the widgets to.
   """
   year, month = list(map(lambda x: int(x), get_current_date().split("-")))
@@ -167,7 +188,8 @@ def setup_add_tab(frame: tk.Frame) -> None:
   
   tk.Button(frame,
             text="Add Workday",
-            command=lambda: add_workday(cal.get_date(),
+            command=lambda: add_workday(root,
+                                        cal.get_date(),
                                         f"{start_hour.get()}:{start_minute.get()}", 
                                         f"{end_hour.get()}:{end_minute.get()}"
                                         ),
@@ -182,15 +204,17 @@ def setup_add_tab(frame: tk.Frame) -> None:
             bd=5
             ).pack(pady=(10, 0), ipadx=10, ipady=0)
   
-  frame.bind('<Return>', lambda event: add_workday(cal.get_date(), f"{start_hour.get()}:{start_minute.get()}", f"{end_hour.get()}:{end_minute.get()}"))  
+  frame.bind('<Return>', lambda event: add_workday(root, cal.get_date(), f"{start_hour.get()}:{start_minute.get()}", f"{end_hour.get()}:{end_minute.get()}"))  
 
-def setup_delete_tab(frame: tk.Frame) -> None:
+def setup_delete_tab(root: tk.Tk, frame: tk.Frame) -> None:
   """
   Setup the "Delete Workday" tab.
 
   Args:
+      root (tk.Tk): The root window.
       frame (tk.Frame): The frame to add the widgets to.
   """
+  all_days = set(range(1, 32))
   year, month = list(map(lambda x: int(x), get_current_date().split("-")))
   cal = Calendar(frame, 
                  selectmode = 'day',
@@ -210,30 +234,50 @@ def setup_delete_tab(frame: tk.Frame) -> None:
                  selectforeground="blue")
   cal.pack(padx=10, pady=(20, 0), fill="both")
   
-  workdays = get_workdays(str(year), f"{month:02d}")
-  all_days = set(range(1, 32))
-  workdays_set = set(date.fromisoformat(day).day for day in workdays)
-  non_workdays = all_days - workdays_set
+  workdays = get_workdays(root, str(year), f"{month:02d}")
 
-  for day in non_workdays:
-    cal.calevent_create(date(year, month, day).isoformat(), 'NonWorkday', 'nonworkday')
-  cal.tag_config('nonworkday', background='grey', foreground='white')
-
-  def on_month_change(event):
-    cal.calevent_remove('nonworkday')
-    new_year, new_month = cal.get_displayed_month()
-    workdays = get_workdays(str(new_year), f"{new_month:02d}")
-    workdays_set = set(date.fromisoformat(day).day for day in workdays)
+  if workdays:
+    workdays_set = set(datetime.strptime(day, DATE_FORMAT).day for day in workdays)
     non_workdays = all_days - workdays_set
 
     for day in non_workdays:
-      cal.calevent_create(date(new_year, new_month, day).isoformat(), 'NonWorkday', 'nonworkday')
+        try:
+            cal.calevent_create(date(year, month, day), 'NonWorkday', 'nonworkday')
+        except ValueError:
+            pass
+
+    cal.tag_config('nonworkday', background='grey', foreground='lightgrey')
+  
+  def on_date_selected(event):
+    selected_date = cal.get_date()
+    selected_date_obj = datetime.strptime(selected_date, DATE_FORMAT).day
+    if selected_date_obj in non_workdays:
+        print("Selection disabled for:", selected_date)
+        cal.selection_clear()
+
+  # Bind event to detect selection change
+  cal.bind("<<CalendarSelected>>", on_date_selected)
+
+  # Function to handle month change
+  def on_month_change(event):
+    cal.calevent_remove('nonworkday')
+    new_month, new_year = cal.get_displayed_month()
+    workdays = get_workdays(root, str(new_year), f"{new_month:02d}")
+    if workdays:
+      workdays_set = set(datetime.strptime(day, DATE_FORMAT).day for day in workdays)
+      non_workdays = all_days - workdays_set
+
+      for day in non_workdays:
+          try:
+              cal.calevent_create(date(new_year, new_month, day), 'NonWorkday', 'nonworkday')
+          except ValueError:
+              pass  # Ignore invalid dates
 
   cal.bind("<<CalendarMonthChanged>>", on_month_change)
   
   tk.Button(frame,
             text="Delete Workday",
-            command=lambda: remove_workday(cal.get_date()),
+            command=lambda: remove_workday(root, cal.get_date()),
             font=("Arial", 14, "bold"),
             fg="black",
             bg="blue",
@@ -245,9 +289,16 @@ def setup_delete_tab(frame: tk.Frame) -> None:
             bd=5
             ).pack(pady=(10, 0), ipadx=10)
   
-  frame.bind('<Return>', lambda event: remove_workday(cal.get_date()))
+  frame.bind('<Return>', lambda event: remove_workday(root, cal.get_date()))
 
-def setup_paying_tab(frame):
+def setup_paying_tab(root: tk.Tk, frame: tk.Frame) -> None:
+  """
+  Setup the "View Paying" tab.
+
+  Args:
+      root (tk.Tk): The root window.
+      frame (tk.Frame): The frame to add the widgets to.
+  """
   default_year, default_month = get_current_date().split("-")
   
   notebook_paying = ttk.Notebook(frame)
@@ -298,7 +349,7 @@ def setup_paying_tab(frame):
   total_paying.grid(row=0, column=1, padx=5, pady=5, sticky="w")
   tk.Button(tab_monthly,
             text="Get Paying",
-            command=lambda: total_paying.config(text=get_monthly_pay(monthly_year.get(), monthly_month.get())),
+            command=lambda: total_paying.config(text=get_monthly_pay(root, monthly_year.get(), monthly_month.get())),
             font=("Arial", 14, "bold"),
             fg="black",
             bg="blue",
@@ -310,7 +361,7 @@ def setup_paying_tab(frame):
             bd=5
             ).pack(padx=5, pady=5)
 
-  tab_monthly.bind('<Return>', lambda event: total_paying.config(text=get_monthly_pay(monthly_year.get(), monthly_month.get())))
+  tab_monthly.bind('<Return>', lambda event: total_paying.config(text=get_monthly_pay(root, monthly_year.get(), monthly_month.get())))
   #endregion
   
   #region yearly pay content
@@ -345,7 +396,7 @@ def setup_paying_tab(frame):
   total_yearly_paying.grid(row=0, column=1, padx=5, pady=5, sticky="w")
   tk.Button(tab_yearly,
             text="Get Paying",
-            command=lambda: total_yearly_paying.config(text=get_yearly_pay(yearly_year.get())),
+            command=lambda: total_yearly_paying.config(text=get_yearly_pay(root, yearly_year.get())),
             font=("Arial", 14, "bold"),
             fg="black",
             bg="blue",
@@ -357,7 +408,7 @@ def setup_paying_tab(frame):
             bd=5
             ).pack(padx=5, pady=5)
 
-  tab_yearly.bind('<Return>', lambda event: total_yearly_paying.config(text=get_yearly_pay(yearly_year.get())))
+  tab_yearly.bind('<Return>', lambda event: total_yearly_paying.config(text=get_yearly_pay(root, yearly_year.get())))
   #endregion
 
 def main():
@@ -377,9 +428,9 @@ def main():
   notebook.add(tab_delete, text='Delete Workday')
   notebook.add(tab_paying, text='View Paying')
 
-  setup_add_tab(tab_add)
-  setup_delete_tab(tab_delete)
-  setup_paying_tab(tab_paying)
+  setup_add_tab(root, tab_add)
+  setup_delete_tab(root, tab_delete)
+  setup_paying_tab(root, tab_paying)
 
 
   root.mainloop()
