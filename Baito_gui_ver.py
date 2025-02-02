@@ -201,39 +201,47 @@ def setup_add_tab(root: tk.Tk, frame: tk.Frame) -> None:
   start_time_frame.grid(row=0, column=0)
   tk.Label(start_time_frame, text="Start Time:").grid(row=0, column=0, padx=5, pady=5)
   
-  default_time = list(map(int, config.get_default_start_time().split(":")))
-  default_start_hour = tk.IntVar(value=default_time[0])
-  default_start_minute = tk.IntVar(value=default_time[1])
+  default_start_time = list(map(int, config.get_default_start_time().split(":")))
+  start_hour = tk.IntVar(value=default_start_time[0])
+  start_minute = tk.IntVar(value=default_start_time[1])
   
-  start_hour = tk.Spinbox(start_time_frame, width=2, from_=0, to=23, textvariable=default_start_hour)
-  start_hour.grid(row=0, column=1, padx=0, pady=5)
+  start_hour_box = tk.Spinbox(start_time_frame, width=2, from_=0, to=23, textvariable=start_hour)
+  start_hour_box.grid(row=0, column=1, padx=0, pady=5)
   
   tk.Label(start_time_frame, text=":").grid(row=0, column=2, padx=0, pady=5)
   
-  start_minute = tk.Spinbox(start_time_frame, width=2, values=minutes_tuple, textvariable=default_start_minute, wrap=True)
-  start_minute.grid(row=0, column=3, padx=0, pady=5)
+  start_minute_box = tk.Spinbox(start_time_frame, width=2, values=minutes_tuple, textvariable=start_minute, wrap=True)
+  start_minute_box.grid(row=0, column=3, padx=0, pady=5)
   
   
   end_time_frame = tk.Frame(time_frame)
   end_time_frame.grid(row=1, column=0)
   tk.Label(end_time_frame, text="End Time:").grid(row=1, column=0, padx=(5, 11), pady=5)
   
-  default_time = list(map(int, config.get_default_end_time().split(":")))
-  default_end_hour = tk.IntVar(value=default_time[0])
-  default_end_minute = tk.IntVar(value=default_time[1])
+  default_end_time = list(map(int, config.get_default_end_time().split(":")))
+  end_hour = tk.IntVar(value=default_end_time[0])
+  end_minute = tk.IntVar(value=default_end_time[1])
   
-  end_hour = tk.Spinbox(end_time_frame, width=2, from_=0, to=23, textvariable=default_end_hour)
-  end_hour.grid(row=1, column=1, padx=0, pady=5)
+  end_hour_box = tk.Spinbox(end_time_frame, width=2, from_=0, to=23, textvariable=end_hour)
+  end_hour_box.grid(row=1, column=1, padx=0, pady=5)
   
   tk.Label(end_time_frame, text=":").grid(row=1, column=2, padx=0, pady=5)
   
-  end_minute = tk.Spinbox(end_time_frame, width=2, values=minutes_tuple, textvariable=default_end_minute, wrap=True)
-  end_minute.grid(row=1, column=3, padx=0, pady=5)
+  end_minute_box = tk.Spinbox(end_time_frame, width=2, values=minutes_tuple, textvariable=end_minute, wrap=True)
+  end_minute_box.grid(row=1, column=3, padx=0, pady=5)
+  
+  def reset_time():
+    start_hour.set(f"{default_start_time[0]:02d}")
+    start_minute.set(f"{default_start_time[1]:02d}")
+    end_hour.set(f"{default_end_time[0]:02d}")
+    end_minute.set(f"{default_end_time[1]:02d}")
   
   def on_enter(event=None):
-    add_workday(root, cal.get_date(), f"{start_hour.get()}:{start_minute.get()}", f"{end_hour.get()}:{end_minute.get()}")
+    add_workday(root, cal.get_date(), f"{start_hour_box.get()}:{start_minute_box.get()}", f"{end_hour_box.get()}:{end_minute_box.get()}")
     cal.selection_clear()
     on_month_change(event)
+    reset_time()
+    
     
   tk.Button(frame,
             text="Add Workday",
@@ -355,6 +363,8 @@ def setup_paying_tab(root: tk.Tk, frame: tk.Frame) -> None:
       frame (tk.Frame): The frame to add the widgets to.
   """
   default_year, default_month = get_current_date().split("-")
+  months_tuple = tuple(range(1, 13))
+  months_tuple = tuple(map(lambda x: f"{x:02d}", months_tuple))
   
   notebook_paying = ttk.Notebook(frame)
   notebook_paying.pack(expand=True, fill='both')
@@ -379,14 +389,26 @@ def setup_paying_tab(root: tk.Tk, frame: tk.Frame) -> None:
   #endregion
 
   tk.Label(monthly_date_frame, text="Year:", font=("Arial", 14, "bold")).grid(row=0, column=1, padx=5, pady=5, sticky="e")
-  monthly_year = tk.Entry(monthly_date_frame, font=("Arial", 14, "bold"), width=5)
-  monthly_year.grid(row=0, column=2, padx=(5, 0), pady=5, sticky="w")
-  monthly_year.insert(0, default_year)
+  monthly_year = tk.StringVar(value=default_year)
+  monthly_year_box = tk.Spinbox(monthly_date_frame, 
+                            from_=int(default_year) - 50,
+                            to=int(default_year) + 50, 
+                            textvariable=monthly_year,
+                            wrap=True,font=("Arial", 14, "bold"), 
+                            width=5)
+  monthly_year_box.grid(row=0, column=2, padx=(5, 0), pady=5, sticky="w")
   
   tk.Label(monthly_date_frame, text="Month:", font=("Arial", 14, "bold")).grid(row=0, column=3, padx=(0, 0), pady=5, sticky="e")
-  monthly_month = tk.Entry(monthly_date_frame, font=("Arial", 14, "bold"), width=5)
-  monthly_month.grid(row=0, column=4, padx=(5, 0), pady=5, sticky="w")
-  monthly_month.insert(0, default_month)
+  monthly_month = tk.StringVar(value=default_month)
+  monthly_month_box = tk.Spinbox(monthly_date_frame, 
+                             values=months_tuple,
+                             textvariable=monthly_month,
+                             wrap=True,
+                             font=("Arial", 14, "bold"),
+                             width=5)
+  monthly_month_box.grid(row=0, column=4, padx=(5, 0), pady=5, sticky="w")
+  monthly_month_box.delete(0, "end")
+  monthly_month_box.insert(0, default_month)
 
   monthly_pay_frame = tk.LabelFrame(tab_monthly, text="Total Paying", padx=10, pady=10)
   monthly_pay_frame.pack(padx=10, pady=0, fill="x")
@@ -404,7 +426,7 @@ def setup_paying_tab(root: tk.Tk, frame: tk.Frame) -> None:
   total_paying.grid(row=0, column=1, padx=5, pady=5, sticky="w")
   tk.Button(tab_monthly,
             text="Get Paying",
-            command=lambda: total_paying.config(text=get_monthly_pay(root, monthly_year.get(), monthly_month.get())),
+            command=lambda: total_paying.config(text=get_monthly_pay(root, monthly_year_box.get(), monthly_month_box.get())),
             font=("Arial", 14, "bold"),
             fg="black",
             bg="blue",
@@ -416,7 +438,7 @@ def setup_paying_tab(root: tk.Tk, frame: tk.Frame) -> None:
             bd=5
             ).pack(padx=5, pady=5)
 
-  tab_monthly.bind('<Return>', lambda event: total_paying.config(text=get_monthly_pay(root, monthly_year.get(), monthly_month.get())))
+  tab_monthly.bind('<Return>', lambda event: total_paying.config(text=get_monthly_pay(root, monthly_year_box.get(), monthly_month_box.get())))
   #endregion
   
   #region yearly pay content
@@ -431,9 +453,15 @@ def setup_paying_tab(root: tk.Tk, frame: tk.Frame) -> None:
   #endregion
 
   tk.Label(yearly_date_frame, text="Year:", font=("Arial", 14, "bold")).grid(row=0, column=1, padx=0, pady=5, sticky="E")
-  yearly_year = tk.Entry(yearly_date_frame, font=("Arial", 14, "bold"), width=5)
-  yearly_year.grid(row=0, column=2, padx=(0, 0), pady=5, sticky="W")
-  yearly_year.insert(0, default_year)
+  yearly_year = tk.StringVar(value=default_year)
+  yearly_year_box = tk.Spinbox(yearly_date_frame,
+                           from_=int(default_year) - 50,
+                           to=int(default_year) + 50,
+                           textvariable=yearly_year,
+                           wrap=True,
+                           font=("Arial", 14, "bold"),
+                           width=5)
+  yearly_year_box.grid(row=0, column=2, padx=(0, 0), pady=5, sticky="W")
 
   yearly_pay_frame = tk.LabelFrame(tab_yearly, text="Total Paying", padx=10, pady=10)
   yearly_pay_frame.pack(padx=10, pady=0, fill="x")
@@ -451,7 +479,7 @@ def setup_paying_tab(root: tk.Tk, frame: tk.Frame) -> None:
   total_yearly_paying.grid(row=0, column=1, padx=5, pady=5, sticky="w")
   tk.Button(tab_yearly,
             text="Get Paying",
-            command=lambda: total_yearly_paying.config(text=get_yearly_pay(root, yearly_year.get())),
+            command=lambda: total_yearly_paying.config(text=get_yearly_pay(root, yearly_year_box.get())),
             font=("Arial", 14, "bold"),
             fg="black",
             bg="blue",
@@ -464,7 +492,7 @@ def setup_paying_tab(root: tk.Tk, frame: tk.Frame) -> None:
             ).pack(padx=5, pady=5)
 
   def on_enter(event):
-    total_yearly_paying.config(text=get_yearly_pay(root, yearly_year.get()))
+    total_yearly_paying.config(text=get_yearly_pay(root, yearly_year_box.get()))
     
   tab_yearly.bind('<Return>', lambda event: on_enter(event))
   #endregion
