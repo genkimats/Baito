@@ -8,7 +8,7 @@ from module.utils import get_current_date
 from module.baito_configuration import BaitoConfiguration
 from module.shift_manage import BaitoManage
 from datetime import datetime, date
-
+from time import sleep
 config = BaitoConfiguration()
 
 DATE_FORMAT = config.get_date_format()
@@ -550,14 +550,15 @@ def main():
   
   tab_add.focus_set()
   
+  
   while True:
-    try:
-      root.update_idletasks()
-      root.update()
-      print(root.focus_get())
-    except tk.TclError:
-      break
-
+      try:
+        root.update_idletasks()
+        root.update()
+        print(root.focus_get())
+      except tk.TclError:
+        break
+      sleep(1)
 
   root.mainloop()
 
