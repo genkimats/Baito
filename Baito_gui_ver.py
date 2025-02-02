@@ -362,6 +362,146 @@ def setup_paying_tab(root: tk.Tk, frame: tk.Frame) -> None:
       root (tk.Tk): The root window.
       frame (tk.Frame): The frame to add the widgets to.
   """
+  
+  def setup_monthly_tab(root: tk.Tk, tab_monthly: tk.Frame) -> None:
+    """
+    Setup the "Monthly Pay" tab.
+
+    Args:
+        root (tk.Tk): The root window.
+        tab_monthly (tk.Frame): The frame to add the widgets to.
+    """
+    
+    date_frame = tk.LabelFrame(tab_monthly, text="Select Date", padx=10, pady=10)
+    date_frame.pack(padx=10, pady=10, fill="x")
+    
+    #region columnconfig
+    date_frame.grid_columnconfigure(0, weight=1)
+    date_frame.grid_columnconfigure(1, weight=1)
+    date_frame.grid_columnconfigure(2, weight=1)
+    date_frame.grid_columnconfigure(3, weight=1)
+    date_frame.grid_columnconfigure(4, weight=1)
+    date_frame.grid_columnconfigure(5, weight=1)
+    #endregion
+
+    tk.Label(date_frame, text="Year:", font=("Arial", 14, "bold")).grid(row=0, column=1, padx=5, pady=5, sticky="e")
+    year = tk.StringVar(value=default_year)
+    year_box = tk.Spinbox(date_frame, 
+                              from_=int(default_year) - 50,
+                              to=int(default_year) + 50, 
+                              textvariable=year,
+                              wrap=True,font=("Arial", 14, "bold"), 
+                              width=5)
+    year_box.grid(row=0, column=2, padx=(5, 0), pady=5, sticky="w")
+    
+    tk.Label(date_frame, text="Month:", font=("Arial", 14, "bold")).grid(row=0, column=3, padx=(0, 0), pady=5, sticky="e")
+    month = tk.StringVar(value=default_month)
+    month_box = tk.Spinbox(date_frame, 
+                              values=months_tuple,
+                              textvariable=month,
+                              wrap=True,
+                              font=("Arial", 14, "bold"),
+                              width=5)
+    month_box.grid(row=0, column=4, padx=(5, 0), pady=5, sticky="w")
+    month_box.delete(0, "end")
+    month_box.insert(0, default_month)
+
+    pay_frame = tk.LabelFrame(tab_monthly, text="Total Paying", padx=10, pady=10)
+    pay_frame.pack(padx=10, pady=0, fill="x")
+
+    #region columnconfig
+    pay_frame.grid_columnconfigure(0, weight=1)
+    pay_frame.grid_columnconfigure(1, weight=1)
+    pay_frame.grid_columnconfigure(2, weight=1)
+    pay_frame.grid_columnconfigure(3, weight=2)
+    #endregion
+
+
+    tk.Label(pay_frame, text="Total Paying", font=("Arial", 14, "bold")).grid(row=0, column=0, padx=5, pady=5, sticky="e")
+    total_paying = tk.Label(pay_frame, text="---", font=("Arial", 14, "bold"))
+    total_paying.grid(row=0, column=1, padx=5, pady=5, sticky="w")
+    
+    def on_enter(event=None):
+      total_paying.config(text=get_monthly_pay(root, year_box.get(), month_box.get()))
+      
+      
+    tk.Button(tab_monthly,
+              text="Get Paying",
+              command=on_enter,
+              font=("Arial", 14, "bold"),
+              fg="black",
+              bg="blue",
+              activeforeground="green",
+              activebackground="green",
+              width=10,
+              height=2,
+              relief="ridge",
+              bd=5
+              ).pack(padx=5, pady=5)
+
+    tab_monthly.bind('<Return>', on_enter)
+
+  def setup_yearly_tab(root: tk.Tk, tab_yearly: tk.Frame) -> None:
+    """
+    Setup the "Yearly Pay" tab.
+
+    Args:
+        root (tk.Tk): The root window.
+        tab_yearly (tk.Frame): The frame to add the widgets to.
+    """
+    date_frame = tk.LabelFrame(tab_yearly, text="Select Date", padx=10, pady=10)
+    date_frame.pack(padx=10, pady=10, fill="x")
+    
+    #region columnconfig
+    date_frame.grid_columnconfigure(0, weight=1)
+    date_frame.grid_columnconfigure(1, weight=1)
+    date_frame.grid_columnconfigure(2, weight=1)
+    date_frame.grid_columnconfigure(3, weight=1)
+    #endregion
+
+    tk.Label(date_frame, text="Year:", font=("Arial", 14, "bold")).grid(row=0, column=1, padx=0, pady=5, sticky="E")
+    year = tk.StringVar(value=default_year)
+    year_box = tk.Spinbox(date_frame,
+                            from_=int(default_year) - 50,
+                            to=int(default_year) + 50,
+                            textvariable=year,
+                            wrap=True,
+                            font=("Arial", 14, "bold"),
+                            width=5)
+    year_box.grid(row=0, column=2, padx=(0, 0), pady=5, sticky="W")
+
+    pay_frame = tk.LabelFrame(tab_yearly, text="Total Paying", padx=10, pady=10)
+    pay_frame.pack(padx=10, pady=0, fill="x")
+
+    #region columnconfig
+    pay_frame.grid_columnconfigure(0, weight=1)
+    pay_frame.grid_columnconfigure(1, weight=1)
+    pay_frame.grid_columnconfigure(2, weight=1)
+    pay_frame.grid_columnconfigure(3, weight=2)
+    #endregion
+
+    def on_enter(event=None):
+      total_paying.config(text=get_yearly_pay(root, year_box.get()))
+
+    tk.Label(pay_frame, text="Total Paying", font=("Arial", 14, "bold")).grid(row=0, column=0, padx=5, pady=5, sticky="e")
+    total_paying = tk.Label(pay_frame, text="---", font=("Arial", 14, "bold"))
+    total_paying.grid(row=0, column=1, padx=5, pady=5, sticky="w")
+    tk.Button(tab_yearly,
+              text="Get Paying",
+              command=on_enter,
+              font=("Arial", 14, "bold"),
+              fg="black",
+              bg="blue",
+              activeforeground="green",
+              activebackground="green",
+              width=10,
+              height=2,
+              relief="ridge",
+              bd=5
+              ).pack(padx=5, pady=5)
+      
+    tab_yearly.bind('<Return>', on_enter)
+  
   default_year, default_month = get_current_date().split("-")
   months_tuple = tuple(range(1, 13))
   months_tuple = tuple(map(lambda x: f"{x:02d}", months_tuple))
@@ -375,127 +515,17 @@ def setup_paying_tab(root: tk.Tk, frame: tk.Frame) -> None:
   notebook_paying.add(tab_monthly, text='Monthly Pay')
   notebook_paying.add(tab_yearly, text='Yearly Pay')
   
-  #region monthly pay content
-  monthly_date_frame = tk.LabelFrame(tab_monthly, text="Select Date", padx=10, pady=10)
-  monthly_date_frame.pack(padx=10, pady=10, fill="x")
+  setup_monthly_tab(root, tab_monthly)
+  setup_yearly_tab(root, tab_yearly)
   
-  #region columnconfig
-  monthly_date_frame.grid_columnconfigure(0, weight=1)
-  monthly_date_frame.grid_columnconfigure(1, weight=1)
-  monthly_date_frame.grid_columnconfigure(2, weight=1)
-  monthly_date_frame.grid_columnconfigure(3, weight=1)
-  monthly_date_frame.grid_columnconfigure(4, weight=1)
-  monthly_date_frame.grid_columnconfigure(5, weight=1)
-  #endregion
-
-  tk.Label(monthly_date_frame, text="Year:", font=("Arial", 14, "bold")).grid(row=0, column=1, padx=5, pady=5, sticky="e")
-  monthly_year = tk.StringVar(value=default_year)
-  monthly_year_box = tk.Spinbox(monthly_date_frame, 
-                            from_=int(default_year) - 50,
-                            to=int(default_year) + 50, 
-                            textvariable=monthly_year,
-                            wrap=True,font=("Arial", 14, "bold"), 
-                            width=5)
-  monthly_year_box.grid(row=0, column=2, padx=(5, 0), pady=5, sticky="w")
+  def on_tab_change(event):
+    if notebook_paying.index("current") == 0:
+      tab_monthly.focus_set()
+    else:
+      tab_yearly.focus_set()
+  root.slaves()[0].bind("<<NotebookTabChanged>>", on_tab_change)
   
-  tk.Label(monthly_date_frame, text="Month:", font=("Arial", 14, "bold")).grid(row=0, column=3, padx=(0, 0), pady=5, sticky="e")
-  monthly_month = tk.StringVar(value=default_month)
-  monthly_month_box = tk.Spinbox(monthly_date_frame, 
-                             values=months_tuple,
-                             textvariable=monthly_month,
-                             wrap=True,
-                             font=("Arial", 14, "bold"),
-                             width=5)
-  monthly_month_box.grid(row=0, column=4, padx=(5, 0), pady=5, sticky="w")
-  monthly_month_box.delete(0, "end")
-  monthly_month_box.insert(0, default_month)
-
-  monthly_pay_frame = tk.LabelFrame(tab_monthly, text="Total Paying", padx=10, pady=10)
-  monthly_pay_frame.pack(padx=10, pady=0, fill="x")
-
-  #region columnconfig
-  monthly_pay_frame.grid_columnconfigure(0, weight=1)
-  monthly_pay_frame.grid_columnconfigure(1, weight=1)
-  monthly_pay_frame.grid_columnconfigure(2, weight=1)
-  monthly_pay_frame.grid_columnconfigure(3, weight=2)
-  #endregion
-
-
-  tk.Label(monthly_pay_frame, text="Total Paying", font=("Arial", 14, "bold")).grid(row=0, column=0, padx=5, pady=5, sticky="e")
-  total_paying = tk.Label(monthly_pay_frame, text="---", font=("Arial", 14, "bold"))
-  total_paying.grid(row=0, column=1, padx=5, pady=5, sticky="w")
-  tk.Button(tab_monthly,
-            text="Get Paying",
-            command=lambda: total_paying.config(text=get_monthly_pay(root, monthly_year_box.get(), monthly_month_box.get())),
-            font=("Arial", 14, "bold"),
-            fg="black",
-            bg="blue",
-            activeforeground="green",
-            activebackground="green",
-            width=10,
-            height=2,
-            relief="ridge",
-            bd=5
-            ).pack(padx=5, pady=5)
-
-  tab_monthly.bind('<Return>', lambda event: total_paying.config(text=get_monthly_pay(root, monthly_year_box.get(), monthly_month_box.get())))
-  #endregion
   
-  #region yearly pay content
-  yearly_date_frame = tk.LabelFrame(tab_yearly, text="Select Date", padx=10, pady=10)
-  yearly_date_frame.pack(padx=10, pady=10, fill="x")
-  
-  #region columnconfig
-  yearly_date_frame.grid_columnconfigure(0, weight=1)
-  yearly_date_frame.grid_columnconfigure(1, weight=1)
-  yearly_date_frame.grid_columnconfigure(2, weight=1)
-  yearly_date_frame.grid_columnconfigure(3, weight=1)
-  #endregion
-
-  tk.Label(yearly_date_frame, text="Year:", font=("Arial", 14, "bold")).grid(row=0, column=1, padx=0, pady=5, sticky="E")
-  yearly_year = tk.StringVar(value=default_year)
-  yearly_year_box = tk.Spinbox(yearly_date_frame,
-                           from_=int(default_year) - 50,
-                           to=int(default_year) + 50,
-                           textvariable=yearly_year,
-                           wrap=True,
-                           font=("Arial", 14, "bold"),
-                           width=5)
-  yearly_year_box.grid(row=0, column=2, padx=(0, 0), pady=5, sticky="W")
-
-  yearly_pay_frame = tk.LabelFrame(tab_yearly, text="Total Paying", padx=10, pady=10)
-  yearly_pay_frame.pack(padx=10, pady=0, fill="x")
-
-  #region columnconfig
-  yearly_pay_frame.grid_columnconfigure(0, weight=1)
-  yearly_pay_frame.grid_columnconfigure(1, weight=1)
-  yearly_pay_frame.grid_columnconfigure(2, weight=1)
-  yearly_pay_frame.grid_columnconfigure(3, weight=2)
-  #endregion
-
-
-  tk.Label(yearly_pay_frame, text="Total Paying", font=("Arial", 14, "bold")).grid(row=0, column=0, padx=5, pady=5, sticky="e")
-  total_yearly_paying = tk.Label(yearly_pay_frame, text="---", font=("Arial", 14, "bold"))
-  total_yearly_paying.grid(row=0, column=1, padx=5, pady=5, sticky="w")
-  tk.Button(tab_yearly,
-            text="Get Paying",
-            command=lambda: total_yearly_paying.config(text=get_yearly_pay(root, yearly_year_box.get())),
-            font=("Arial", 14, "bold"),
-            fg="black",
-            bg="blue",
-            activeforeground="green",
-            activebackground="green",
-            width=10,
-            height=2,
-            relief="ridge",
-            bd=5
-            ).pack(padx=5, pady=5)
-
-  def on_enter(event):
-    total_yearly_paying.config(text=get_yearly_pay(root, yearly_year_box.get()))
-    
-  tab_yearly.bind('<Return>', lambda event: on_enter(event))
-  #endregion
 
 def main():
   root = tk.Tk()
@@ -517,6 +547,16 @@ def main():
   setup_add_tab(root, tab_add)
   setup_delete_tab(root, tab_delete)
   setup_paying_tab(root, tab_paying)
+  
+  tab_add.focus_set()
+  
+  while True:
+    try:
+      root.update_idletasks()
+      root.update()
+      print(root.focus_get())
+    except tk.TclError:
+      break
 
 
   root.mainloop()
