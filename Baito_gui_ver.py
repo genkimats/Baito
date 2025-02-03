@@ -409,6 +409,15 @@ def setup_paying_tab(root: tk.Tk, frame: tk.Frame) -> None:
                               width=5)
     year_box.pack(side="left", padx=(5, 0), pady=5)
     
+    prev_month = tk.IntVar(value=default_month)
+    def on_month_change(event=None):
+      current_month = month.get()
+      if current_month == 1 and prev_month.get() == 12:
+        year.set(year.get() + 1)
+      elif current_month == 12 and prev_month.get() == 1:
+        year.set(year.get() - 1)
+      prev_month.set(current_month)
+    
     tk.Label(date_frame, text="Month:", font=("Arial", 14, "bold")).pack(side="left", padx=(35, 0), pady=5)
     month = tk.IntVar(value=int(default_month))
     month_box = tk.Spinbox(date_frame, 
@@ -416,11 +425,10 @@ def setup_paying_tab(root: tk.Tk, frame: tk.Frame) -> None:
                               to=12,
                               textvariable=month,
                               wrap=True,
+                              command=on_month_change,
                               font=("Arial", 14, "bold"),
                               width=5)
     month_box.pack(side="left", padx=5, pady=5)
-    month_box.delete(0, "end")
-    month_box.insert(0, default_month)
 
     pay_frame = tk.LabelFrame(tab_monthly, text="Total Paying", padx=10, pady=10)
     pay_frame.pack(padx=10, pady=0, fill="x")
@@ -540,6 +548,7 @@ def setup_paying_tab(root: tk.Tk, frame: tk.Frame) -> None:
       
   root.slaves()[0].bind("<<NotebookTabChanged>>", on_tab_change)
   
+  
 def setup_view_tab(root: tk.Tk, frame: tk.Frame) -> None:
   """
   Setup the "View Workhours" tab.
@@ -549,8 +558,6 @@ def setup_view_tab(root: tk.Tk, frame: tk.Frame) -> None:
       frame (tk.Frame): The frame to add the widgets to.
   """
   default_year, default_month = list(map(lambda x: int(x), get_current_date().split("-")))
-  print(default_year, default_month)
-  months_tuple = tuple(range(1, 13))
   
   date_frame = tk.LabelFrame(frame, text="Select Date", padx=10, pady=10)
   date_frame.pack(padx=10, pady=10, fill="x")
@@ -568,6 +575,15 @@ def setup_view_tab(root: tk.Tk, frame: tk.Frame) -> None:
                         width=5)
   year_box.pack(side="left", padx=(5, 0), pady=5)
   
+  prev_month = tk.IntVar(value=default_month)
+  def on_month_change(event=None):
+    current_month = month.get()
+    if current_month == 1 and prev_month.get() == 12:
+      year.set(year.get() + 1)
+    elif current_month == 12 and prev_month.get() == 1:
+      year.set(year.get() - 1)
+    prev_month.set(current_month)
+  
   tk.Label(date_frame, text="Month:", font=("Arial", 14, "bold")).pack(side="left", padx=(35, 0), pady=5)
   month = tk.IntVar(value=default_month)
   month_box = tk.Spinbox(date_frame,
@@ -576,6 +592,7 @@ def setup_view_tab(root: tk.Tk, frame: tk.Frame) -> None:
                          textvariable=month,
                          wrap=True,
                          font=("Arial", 14, "bold"),
+                         command=on_month_change,
                          width=5)
   month_box.pack(side="left", padx=5, pady=5)
   
@@ -585,9 +602,6 @@ def setup_view_tab(root: tk.Tk, frame: tk.Frame) -> None:
   tk.Label(workhour_canvas, text="Date", font=("Arial", 14, "bold"), bg="white").grid(row=0, column=0, padx=5, pady=5)
   tk.Label(workhour_canvas, text="Start Time", font=("Arial", 14, "bold"), bg="white").grid(row=0, column=1, padx=5, pady=5)
   tk.Label(workhour_canvas, text="End Time", font=("Arial", 14, "bold"), bg="white").grid(row=0, column=2, padx=5, pady=5)
-  
-  
-  
   
   def on_enter(event=None):
     workhours = get_workhours(root, year_box.get(), month_box.get())
@@ -600,7 +614,6 @@ def setup_view_tab(root: tk.Tk, frame: tk.Frame) -> None:
     scrollbar = tk.Scrollbar(workhour_canvas, orient="vertical", command=workhour_canvas.yview)
     scrollbar.grid(row=0, column=3, sticky="ns", rowspan=i+1)
     workhour_canvas.config(yscrollcommand=scrollbar.set)
-
   
   frame.bind('<Return>', lambda event: on_enter(event))
   
