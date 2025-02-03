@@ -37,6 +37,8 @@ def add_workday(root: tk.Tk, date: str, start_time: str, end_time: str) -> None:
     messagebox.showerror("Error", "Invalid year/month or day")
   elif state == -2:
     messagebox.showerror("Error", "Entry with the same date already exists")
+  elif state == -3:
+    messagebox.showerror("Error", "Invalid start/end time")
     
   root.update_idletasks()
 
@@ -115,17 +117,36 @@ def get_workdays(root: tk.Tk, year: str, month: str) -> list[str]:
       month (str): month in "mm" format.
 
   Returns:
-      list[str]: The workdays for the month.
+      list[str]: The workdays for the month in yyyy-mm-dd format.
   """
   try:
-    workdays = BaitoManage.get_workdays_list(f"{year}-{month}")
+    workdays = BaitoManage.get_workdays_list(year, month)
     return workdays
   except:
     messagebox.showerror("Error", "Invalid year/month")
     root.update_idletasks()
     return []
 
+def get_workhours(root: tk.Tk, year: str, month: str) -> None:
+  """
+  Get the workhours for the month.
+  Called when the user presses the Enter key.
 
+  Args:
+      root (tk.Tk): The root window.
+      year (str): year in "yyyy" format.
+      month (str): month in "mm" format.
+  """
+  workhours = BaitoManage.get_workhours_list(str(year), str(month))
+  if workhours:
+    print(f"Workdays for {year}-{month}:")
+    for hours in workhours:
+      print(hours)
+    return workhours
+  else:
+    print(f"No workdays for {year}-{month}")
+    return []
+    
 def setup_add_tab(root: tk.Tk, frame: tk.Frame) -> None:
   """
   Setup the "Add Workday" tab.
@@ -363,6 +384,8 @@ def setup_paying_tab(root: tk.Tk, frame: tk.Frame) -> None:
       frame (tk.Frame): The frame to add the widgets to.
   """
   
+  default_year, default_month = get_current_date().split("-")
+  
   def setup_monthly_tab(root: tk.Tk, tab_monthly: tk.Frame) -> None:
     """
     Setup the "Monthly Pay" tab.
@@ -371,57 +394,44 @@ def setup_paying_tab(root: tk.Tk, frame: tk.Frame) -> None:
         root (tk.Tk): The root window.
         tab_monthly (tk.Frame): The frame to add the widgets to.
     """
-    
     date_frame = tk.LabelFrame(tab_monthly, text="Select Date", padx=10, pady=10)
     date_frame.pack(padx=10, pady=10, fill="x")
     
-    #region columnconfig
-    date_frame.grid_columnconfigure(0, weight=1)
-    date_frame.grid_columnconfigure(1, weight=1)
-    date_frame.grid_columnconfigure(2, weight=1)
-    date_frame.grid_columnconfigure(3, weight=1)
-    date_frame.grid_columnconfigure(4, weight=1)
-    date_frame.grid_columnconfigure(5, weight=1)
-    #endregion
+    half_width = (int(root.geometry().split("x")[0]) - 128)//2
 
-    tk.Label(date_frame, text="Year:", font=("Arial", 14, "bold")).grid(row=0, column=1, padx=5, pady=5, sticky="e")
-    year = tk.StringVar(value=default_year)
+    tk.Label(date_frame, text="Year:", font=("Arial", 14, "bold")).pack(side="left", padx=(half_width - 140, 0), pady=5)
+    year = tk.IntVar(value=int(default_year))
     year_box = tk.Spinbox(date_frame, 
                               from_=int(default_year) - 50,
                               to=int(default_year) + 50, 
                               textvariable=year,
                               wrap=True,font=("Arial", 14, "bold"), 
                               width=5)
-    year_box.grid(row=0, column=2, padx=(5, 0), pady=5, sticky="w")
+    year_box.pack(side="left", padx=(5, 0), pady=5)
     
-    tk.Label(date_frame, text="Month:", font=("Arial", 14, "bold")).grid(row=0, column=3, padx=(0, 0), pady=5, sticky="e")
-    month = tk.StringVar(value=default_month)
+    tk.Label(date_frame, text="Month:", font=("Arial", 14, "bold")).pack(side="left", padx=(35, 0), pady=5)
+    month = tk.IntVar(value=int(default_month))
     month_box = tk.Spinbox(date_frame, 
-                              values=months_tuple,
+                              from_=1,
+                              to=12,
                               textvariable=month,
                               wrap=True,
                               font=("Arial", 14, "bold"),
                               width=5)
-    month_box.grid(row=0, column=4, padx=(5, 0), pady=5, sticky="w")
+    month_box.pack(side="left", padx=5, pady=5)
     month_box.delete(0, "end")
     month_box.insert(0, default_month)
 
     pay_frame = tk.LabelFrame(tab_monthly, text="Total Paying", padx=10, pady=10)
     pay_frame.pack(padx=10, pady=0, fill="x")
 
-    #region columnconfig
-    pay_frame.grid_columnconfigure(0, weight=1)
-    pay_frame.grid_columnconfigure(1, weight=1)
-    pay_frame.grid_columnconfigure(2, weight=1)
-    pay_frame.grid_columnconfigure(3, weight=2)
-    #endregion
 
-
-    tk.Label(pay_frame, text="Total Paying", font=("Arial", 14, "bold")).grid(row=0, column=0, padx=5, pady=5, sticky="e")
+    tk.Label(pay_frame, text="Total Paying", font=("Arial", 14, "bold")).pack(side="left", padx=5, pady=5)
     total_paying = tk.Label(pay_frame, text="---", font=("Arial", 14, "bold"))
-    total_paying.grid(row=0, column=1, padx=5, pady=5, sticky="w")
+    total_paying.pack(side="left", padx=5, pady=5)
     
     def on_enter(event=None):
+      print(int(root.geometry().split("x")[0]) - date_frame.winfo_width())
       total_paying.config(text=get_monthly_pay(root, year_box.get(), month_box.get()))
       
       
@@ -449,6 +459,7 @@ def setup_paying_tab(root: tk.Tk, frame: tk.Frame) -> None:
         root (tk.Tk): The root window.
         tab_yearly (tk.Frame): The frame to add the widgets to.
     """
+    
     date_frame = tk.LabelFrame(tab_yearly, text="Select Date", padx=10, pady=10)
     date_frame.pack(padx=10, pady=10, fill="x")
     
@@ -502,9 +513,6 @@ def setup_paying_tab(root: tk.Tk, frame: tk.Frame) -> None:
       
     tab_yearly.bind('<Return>', on_enter)
   
-  default_year, default_month = get_current_date().split("-")
-  months_tuple = tuple(range(1, 13))
-  months_tuple = tuple(map(lambda x: f"{x:02d}", months_tuple))
   
   notebook_paying = ttk.Notebook(frame)
   notebook_paying.pack(expand=True, fill='both')
@@ -518,19 +526,90 @@ def setup_paying_tab(root: tk.Tk, frame: tk.Frame) -> None:
   setup_monthly_tab(root, tab_monthly)
   setup_yearly_tab(root, tab_yearly)
   
-  def on_tab_change(event):
+  def on_tab_change(event: tk.Event = None) -> None:
+    """
+    Focus the tab that is currently selected.
+
+    Args:
+        event (tk.Event): The event that triggered the function. Defaults to None.
+    """
     if notebook_paying.index("current") == 0:
       tab_monthly.focus_set()
     else:
       tab_yearly.focus_set()
+      
   root.slaves()[0].bind("<<NotebookTabChanged>>", on_tab_change)
+  
+def setup_view_tab(root: tk.Tk, frame: tk.Frame) -> None:
+  """
+  Setup the "View Workhours" tab.
+
+  Args:
+      root (tk.Tk): The root window.
+      frame (tk.Frame): The frame to add the widgets to.
+  """
+  default_year, default_month = list(map(lambda x: int(x), get_current_date().split("-")))
+  print(default_year, default_month)
+  months_tuple = tuple(range(1, 13))
+  
+  date_frame = tk.LabelFrame(frame, text="Select Date", padx=10, pady=10)
+  date_frame.pack(padx=10, pady=10, fill="x")
+  
+  half_width = (int(root.geometry().split("x")[0]) - 74)//2
+  
+  tk.Label(date_frame, text="Year:", font=("Arial", 14, "bold")).pack(side="left", padx=(half_width - 140, 0), pady=5)
+  year = tk.IntVar(value=default_year)
+  year_box = tk.Spinbox(date_frame,
+                        from_=int(default_year) - 50,
+                        to=int(default_year) + 50,
+                        textvariable=year,
+                        wrap=True,
+                        font=("Arial", 14, "bold"),
+                        width=5)
+  year_box.pack(side="left", padx=(5, 0), pady=5)
+  
+  tk.Label(date_frame, text="Month:", font=("Arial", 14, "bold")).pack(side="left", padx=(35, 0), pady=5)
+  month = tk.IntVar(value=default_month)
+  month_box = tk.Spinbox(date_frame,
+                         from_=1,
+                         to=12,
+                         textvariable=month,
+                         wrap=True,
+                         font=("Arial", 14, "bold"),
+                         width=5)
+  month_box.pack(side="left", padx=5, pady=5)
+  
+  workhour_canvas = tk.Canvas(frame, bg="white", width=500, height=300)
+  workhour_canvas.pack(padx=10, pady=10, fill="x")
+  
+  tk.Label(workhour_canvas, text="Date", font=("Arial", 14, "bold"), bg="white").grid(row=0, column=0, padx=5, pady=5)
+  tk.Label(workhour_canvas, text="Start Time", font=("Arial", 14, "bold"), bg="white").grid(row=0, column=1, padx=5, pady=5)
+  tk.Label(workhour_canvas, text="End Time", font=("Arial", 14, "bold"), bg="white").grid(row=0, column=2, padx=5, pady=5)
+  
+  
+  
+  
+  def on_enter(event=None):
+    workhours = get_workhours(root, year_box.get(), month_box.get())
+    workdays = get_workdays(root, year_box.get(), month_box.get())
+    i = 0
+    for i, workday in enumerate(workdays):
+      tk.Label(workhour_canvas, text=workday, font=("Arial", 14, "bold"), bg="white").grid(row=i+1, column=0, padx=5, pady=5)
+      tk.Label(workhour_canvas, text=workhours[i][0], font=("Arial", 14, "bold"), bg="white").grid(row=i+1, column=1, padx=5, pady=5)
+      tk.Label(workhour_canvas, text=workhours[i][1], font=("Arial", 14, "bold"), bg="white").grid(row=i+1, column=2, padx=5, pady=5)
+    scrollbar = tk.Scrollbar(workhour_canvas, orient="vertical", command=workhour_canvas.yview)
+    scrollbar.grid(row=0, column=3, sticky="ns", rowspan=i+1)
+    workhour_canvas.config(yscrollcommand=scrollbar.set)
+
+  
+  frame.bind('<Return>', lambda event: on_enter(event))
   
   
 
 def main():
   root = tk.Tk()
   root.title(u"Baito")
-  root.geometry("450x450")
+  root.geometry("550x450")
   root.resizable(False, False)
 
   notebook = ttk.Notebook(root)
@@ -539,27 +618,34 @@ def main():
   tab_add = ttk.Frame(notebook)
   tab_delete = ttk.Frame(notebook)
   tab_paying = ttk.Frame(notebook)
+  tab_view = ttk.Frame(notebook)
 
   notebook.add(tab_add, text='Add Workday')
   notebook.add(tab_delete, text='Delete Workday')
   notebook.add(tab_paying, text='View Paying')
+  notebook.add(tab_view, text='View Workhours')
 
   setup_add_tab(root, tab_add)
   setup_delete_tab(root, tab_delete)
   setup_paying_tab(root, tab_paying)
+  setup_view_tab(root, tab_view)
   
   tab_add.focus_set()
   
-  debug = False
+  debug = True
+  
   if debug:
+    counter = 0
     while True:
         try:
           root.update_idletasks()
           root.update()
-          print(root.focus_get())
+          if counter > 10000:
+            print(root.focus_get())
+            counter = 0
+          counter += 1
         except tk.TclError:
           break
-        sleep(1)
   else:
     root.mainloop()
 

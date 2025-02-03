@@ -28,16 +28,16 @@ class BaitoManage:
     def initialize_csv(cls, year_month: str) -> None:
         """
         Initialize the csv file for worktime management.
-        Only called when the csv file does not exist.
+        Can be called without checking if the file already exists.
 
         Args:
             year_month (str): year and month in "yyyy-mm" format.
         """
         try:
             if not year_month:
-                csv_file = f"worktime_info/{FILE_FORMAT}{get_current_date()}"
+                csv_file = f"worktime_info/{FILE_FORMAT}{get_current_date()}.csv"
             else:
-                csv_file = f"worktime_info/{FILE_FORMAT}{year_month}"
+                csv_file = f"worktime_info/{FILE_FORMAT}{year_month}.csv"
             pd.read_csv(csv_file)
         except FileNotFoundError:
             df = pd.DataFrame(columns=COLUMNS)
@@ -56,16 +56,23 @@ class BaitoManage:
             end_time (str): end time in "hh:mm" format.
 
         Returns:
-            int: 0 if successful, -1 if invalid year/month or day, -2 if entry with the same date already exists.
+            int: 0 if successful, -1 if invalid year/month or day, -2 if entry with the same date already exists. -3 if invalid start/end time.
         """
         cls.initialize_csv(year_month)
         date = f"{year_month}-{day}"
+        if start_time.split(":")[0] > end_time.split(":")[0] and start_time.split(":")[1] >= end_time.split(":")[1]:
+            print("\nInvalid start/end time.")
+            return -3
+        
+        start_time = f"{int(start_time.split(':')[0]):02d}:{int(start_time.split(':')[1]):02d}"
+        end_time = f"{int(end_time.split(':')[0]):02d}:{int(end_time.split(':')[1]):02d}"
+            
         new_entry = {
             "date": date,
             "start_time": start_time,
             "end_time": end_time
         }
-        csv_file = f"worktime_info/{FILE_FORMAT}{year_month}"
+        csv_file = f"worktime_info/{FILE_FORMAT}{year_month}.csv"
     
         try:
             df = pd.read_csv(csv_file)
@@ -94,7 +101,7 @@ class BaitoManage:
         Returns:
             int: 0 if successful, -1 if invalid year/month or day.
         """
-        csv_file = f"worktime_info/{FILE_FORMAT}{year_month}"
+        csv_file = f"worktime_info/{FILE_FORMAT}{year_month}.csv"
         try:
             pd.read_csv(csv_file)
             with open(csv_file, "a", newline="") as csvfile:
@@ -122,7 +129,8 @@ class BaitoManage:
         Returns:
             int | str: total paying for the queried month.
         """
-        csv_file = f"worktime_info/{FILE_FORMAT}{year_month}"
+        cls.initialize_csv(year_month)
+        csv_file = f"worktime_info/{FILE_FORMAT}{year_month}.csv"
         try:
             df = pd.read_csv(csv_file, names=COLUMNS, header=0)
         except FileNotFoundError:
@@ -185,17 +193,20 @@ class BaitoManage:
             return formatted_total_paying
     
     @classmethod
-    def get_workdays_list(cls, year_month: str) -> list[str]:
+    def get_workdays_list(cls, year: str, month: str) -> list[str]:
         """
         Get the list of workdays in the queried month.
 
         Args:
-            year_month (str): year and month in "yyyy-mm" format.
+            year (str): year in "yyyy" format.
+            month (str): month in "mm" format.
 
         Returns:
             list[str]: list of workdays in the queried month.
         """
-        csv_file = f"worktime_info/{FILE_FORMAT}{year_month}"
+        year_month = f"{year}-{month}"
+        cls.initialize_csv(year_month)
+        csv_file = f"worktime_info/{FILE_FORMAT}{year_month}.csv"
         try:
             df = pd.read_csv(csv_file, names=COLUMNS, header=0)
         except FileNotFoundError:
@@ -204,3 +215,30 @@ class BaitoManage:
 
         workdays = df["date"].tolist()
         return workdays
+    
+    @classmethod
+    def get_workhours_list(cls, year: str, month: str) -> list[tuple[str, str]]:
+        """
+        Get the list of workhours in the queried month.
+
+        Args:
+            year (str): year in "yyyy" format.
+            month (str): month in "mm" format.
+
+        Returns:
+            list[tuple[str, str]]: list of workhours in the queried month. e.g. [("hh:mm", "hh:mm"), ...]
+        """
+        year_month = f"{year}-{int(month):02d}"
+        cls.initialize_csv(year_month)
+        csv_file = f"worktime_info/{FILE_FORMAT}{year_month}.csv"
+        try:
+            df = pd.read_csv(csv_file, names=COLUMNS, header=0)
+        except FileNotFoundError:
+            print("Invalid date or filename.")
+            return None
+
+        workhours = []
+        for _, row in df.iterrows():
+            work_time = (row["start_time"], row["end_time"])
+            workhours.append(work_time)
+        return workhours
