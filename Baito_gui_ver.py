@@ -550,17 +550,18 @@ def main():
   
   tab_add.focus_set()
   
-  
-  while True:
-      try:
-        root.update_idletasks()
-        root.update()
-        print(root.focus_get())
-      except tk.TclError:
-        break
-      sleep(1)
-
-  root.mainloop()
+  debug = False
+  if debug:
+    while True:
+        try:
+          root.update_idletasks()
+          root.update()
+          print(root.focus_get())
+        except tk.TclError:
+          break
+        sleep(1)
+  else:
+    root.mainloop()
 
 if __name__ == "__main__":
   main()

@@ -1,10 +1,7 @@
 Text version:
 a) limit to 00,15,30,45 minutes
-b) add view all work-days function
+b) add view all work-days feature
 c) add multiple work-day entry
 
 App version:
-a) debug: issue of redrawing issues and key binding issues after closing a messagebox
-tried: add root as a parameter and do root.update_idletasks(). -> failed
-possible solution: check with chatgpt
-if not works: dont use messagebox -> use tk.Label for logs and errors
+a) add view all work-days feature
